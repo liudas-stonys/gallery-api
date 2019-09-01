@@ -45,24 +45,33 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
+    // TODO: ADDED aeOm
+    @Override
+    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication()
+                .withUser("user1").password(passwordEncoder().encode("user1Pass")).roles("USER")
+                .and()
+                .withUser("user2").password(passwordEncoder().encode("user2Pass")).roles("USER")
+                .and()
+                .withUser("admin").password(passwordEncoder().encode("adminPass")).roles("ADMIN");
+    }
+
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         // We don't need CSRF for this example
-        httpSecurity.csrf().disable()
+        httpSecurity.csrf().disable() // TODO: H2
         // dont authenticate this particular request
-        .authorizeRequests().antMatchers("/authenticate", "/register").permitAll().
+        .authorizeRequests().antMatchers("/authenticate", "/register").permitAll()
+        .and().authorizeRequests().antMatchers("/**").permitAll() // TODO: Enables all access
+        .and().authorizeRequests().antMatchers("/h2-console/**").permitAll() // TODO: ADDED H2
         // all other requests need to be authenticated
-        anyRequest().authenticated().and().
-        // make sure we use stateless session; session won't be used to
-        // store user's state.
-        exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
+        .anyRequest().authenticated().and()
+        // make sure we use stateless session; session won't be used to store user's state.
+        .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         // Add a filter to validate the tokens with every request
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-    }
 
-//    @Override
-//    protected void configure(HttpSecurity httpSecurity) throws Exception {
-//        httpSecurity.authorizeRequests().antMatchers("/**").permitAll();
-//    }
+        httpSecurity.headers().frameOptions().disable(); // TODO: ADDED H2
+    }
 }

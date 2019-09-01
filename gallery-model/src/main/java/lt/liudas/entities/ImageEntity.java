@@ -8,6 +8,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "images")
@@ -27,6 +29,7 @@ public class ImageEntity {
 
 //    @Column(name = "data")
 //    @NotBlank
+    @Column(columnDefinition="LONGBLOB")
     private byte[] data;
 
 //    @Column(name = "createdAt", nullable = false, updatable = false)
@@ -40,6 +43,10 @@ public class ImageEntity {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "post_tags", joinColumns = { @JoinColumn(name = "image_id") }, inverseJoinColumns = { @JoinColumn(name = "tag_id") })
+    private Set<TagEntity> tags = new HashSet<>();
 
     public ImageEntity() {
     }

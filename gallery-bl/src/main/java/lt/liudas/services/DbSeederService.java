@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class DbSeeder implements CommandLineRunner {
+public class DbSeederService implements CommandLineRunner {
 
     @Autowired
     private ImageRepository imageRepository;
