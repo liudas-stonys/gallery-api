@@ -4,6 +4,7 @@ target/
 !**/src/main/**
 !**/src/test/**
 Documentation.docx
+xxx
 
 ### STS ###
 .apt_generated

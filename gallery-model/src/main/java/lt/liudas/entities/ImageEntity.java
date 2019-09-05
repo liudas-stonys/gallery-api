@@ -21,7 +21,7 @@ public class ImageEntity {
     @Id
 //    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
 //    @Column(name = "title")
     @NotBlank
@@ -31,6 +31,10 @@ public class ImageEntity {
 //    @NotBlank
     @Column(columnDefinition="LONGBLOB")
     private byte[] data;
+
+    private String mime;
+
+    private Long size;
 
 //    @Column(name = "createdAt", nullable = false, updatable = false)
     @Column(nullable = false, updatable = false)
@@ -45,56 +49,75 @@ public class ImageEntity {
     private Date updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "post_tags", joinColumns = { @JoinColumn(name = "image_id") }, inverseJoinColumns = { @JoinColumn(name = "tag_id") })
+//    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "images_tags", joinColumns = { @JoinColumn(name = "image_id") }, inverseJoinColumns = { @JoinColumn(name = "tag_id") })
     private Set<TagEntity> tags = new HashSet<>();
 
     public ImageEntity() {
     }
 
-    public ImageEntity(@NotBlank String title, byte[] data) {
+    public ImageEntity(@NotBlank String title, byte[] data, String mime, Long size) {
         this.title = title;
         this.data = data;
+        this.mime = mime;
+        this.size = size;
     }
 
-    public long getId() {
+    public ImageEntity(@NotBlank String title, byte[] data, String mime, Long size, Set<TagEntity> tags) {
+        this.title = title;
+        this.data = data;
+        this.mime = mime;
+        this.size = size;
+        this.tags = tags;
+    }
+
+    public Long getId() {
         return id;
     }
 
+//    public void setId(Long id) {
+//        this.id = id;
+//    }
+
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public byte[] getData() {
         return data;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-//    public void setId(long id) {
-//        this.id = id;
-//    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public void setData(byte[] data) {
         this.data = data;
     }
 
-//    public void setCreatedAt(Date createdAt) {
-//        this.createdAt = createdAt;
-//    }
-//
-//    public void setUpdatedAt(Date updatedAt) {
-//        this.updatedAt = updatedAt;
-//    }
+    public String getMime() {
+        return mime;
+    }
+
+    public void setMime(String mime) {
+        this.mime = mime;
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
+
+    public Set<TagEntity> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<TagEntity> tags) {
+        this.tags = tags;
+    }
 }
 
 //    @GeneratedValue(strategy = GenerationType.SEQUENCE)

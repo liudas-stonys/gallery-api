@@ -1,4 +1,4 @@
-package lt.liudas.repositories;
+package lt.liudas.repositoriesDAO;
 
 import lt.liudas.entities.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

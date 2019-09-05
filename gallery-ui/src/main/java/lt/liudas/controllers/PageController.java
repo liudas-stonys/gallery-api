@@ -1,7 +1,6 @@
 package lt.liudas.controllers;
 
-import lt.liudas.entities.ImageEntity;
-import lt.liudas.repositories.ImageRepository;
+import lt.liudas.repositoriesDAO.ImageRepository;
 import lt.liudas.sbs.dao.UserDao;
 import lt.liudas.sbs.models.UserDaoEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +28,10 @@ public class PageController {
         return users;
     }
 
-    @GetMapping("/images")
-    public List<ImageEntity> getImages() {
-        List<ImageEntity> images = this.imageRepositoryImpl.findAll();
-
-        return images;
-    }
+//    @GetMapping("/images")
+//    public List<ImageEntity> getImages() {
+//        List<ImageEntity> images = this.imageRepositoryImpl.findAll();
+//
+//        return images;
+//    }
 }

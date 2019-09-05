@@ -16,11 +16,13 @@ public class TagEntity {
 
     @NotNull
     @Size(max = 100)
-    @NaturalId
+    @NaturalId // TODO: Gives org.springframework.dao.DataIntegrityViolationException: could not execute statement
+    @Column(columnDefinition="text") // TODO: Solves the above?
     private String name;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "tags")
-    private Set<ImageEntity> posts = new HashSet<>();
+//    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "tags")
+    private Set<ImageEntity> images = new HashSet<>();
 
     public TagEntity() {
     }
