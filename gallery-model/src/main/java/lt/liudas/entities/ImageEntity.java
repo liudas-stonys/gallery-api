@@ -1,136 +1,68 @@
 package lt.liudas.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
+@Data
 @Entity
 @Table(name = "images")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
-//public class ImageEntity implements Serializable {
 public class ImageEntity {
-
     @Id
-//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(unique = true)
     private Long id;
 
-//    @Column(name = "title")
-    @NotBlank
-    private String title;
+    private Long idImageFullSize;
 
-//    @Column(name = "data")
-//    @NotBlank
-    @Column(columnDefinition="LONGBLOB")
-    private byte[] data;
+    private String title;
 
     private String mime;
 
+    @Column(columnDefinition = "BLOB")
+    private byte[] data;
+
     private Long size;
 
-//    @Column(name = "createdAt", nullable = false, updatable = false)
+    private String description;
+
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
     private Date createdAt;
 
-//    @Column(name = "updatedAt", nullable = false)
     @Column(nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-//    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "images_tags", joinColumns = { @JoinColumn(name = "image_id") }, inverseJoinColumns = { @JoinColumn(name = "tag_id") })
-    private Set<TagEntity> tags = new HashSet<>();
+    @JoinTable(name = "images_categories", joinColumns = {@JoinColumn(name = "image_id")}, inverseJoinColumns = {@JoinColumn(name = "category_id")})
+    private Set<CategoryEntity> categories; // = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "images_tags", joinColumns = {@JoinColumn(name = "image_id")}, inverseJoinColumns = {@JoinColumn(name = "tag_id")})
+    private Set<TagEntity> tags; // = new HashSet<>();
 
     public ImageEntity() {
     }
 
-    public ImageEntity(@NotBlank String title, byte[] data, String mime, Long size) {
-        this.title = title;
-        this.data = data;
+    public ImageEntity(Long idImageFullSize, String title, String mime, byte[] data, Long size, String description, Set<CategoryEntity> categories, Set<TagEntity> tags) {
+        this.idImageFullSize = idImageFullSize;
+        this.title = title.toLowerCase();
         this.mime = mime;
-        this.size = size;
-    }
-
-    public ImageEntity(@NotBlank String title, byte[] data, String mime, Long size, Set<TagEntity> tags) {
-        this.title = title;
         this.data = data;
-        this.mime = mime;
         this.size = size;
-        this.tags = tags;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
-    public String getMime() {
-        return mime;
-    }
-
-    public void setMime(String mime) {
-        this.mime = mime;
-    }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public void setSize(Long size) {
-        this.size = size;
-    }
-
-    public Set<TagEntity> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<TagEntity> tags) {
+        this.description = description.toLowerCase();
+        this.categories = categories;
         this.tags = tags;
     }
 }
-
-//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-//    @Basic(optional = false)
-//    @Column(insertable = false, nullable = false, updatable = false)
-//    @Column(name="timestamp", columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP", nullable = true)
-//    @Temporal(TemporalType.TIMESTAMP)
-//    @CreatedDate
-//    private Date createdAt;
-//
-//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-//    @Basic(optional = false)
-//    @Column(insertable = false, nullable = true)
-//    @Temporal(TemporalType.TIMESTAMP)
-//    @LastModifiedDate
-//    private Date updatedAt;

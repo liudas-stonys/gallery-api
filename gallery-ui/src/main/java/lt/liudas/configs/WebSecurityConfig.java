@@ -1,4 +1,4 @@
-package lt.liudas.sbs.configs;
+package lt.liudas.configs;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +19,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final String[] OPEN_URLS = {
+            "/api/authenticate",
+            "/api/register",
+            "/api/images",
+            "/api/images/{id}",
+            "/api/images/categories",
+            "/api/images/tags",
+            "/api/images/tags/{name}",
+            "/api/images/fullsize",
+            "/api/images/fullsize/{id}",
+            "/images/search",
+            "/h2-console/**"
+    };
+
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     @Autowired
@@ -45,33 +60,23 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-    // TODO: ADDED aeOm
-    @Override
-    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("user1").password(passwordEncoder().encode("user1Pass")).roles("USER")
-                .and()
-                .withUser("user2").password(passwordEncoder().encode("user2Pass")).roles("USER")
-                .and()
-                .withUser("admin").password(passwordEncoder().encode("adminPass")).roles("ADMIN");
-    }
-
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        // We don't need CSRF for this example
-        httpSecurity.csrf().disable() // TODO: H2
-        // dont authenticate this particular request
-        .authorizeRequests().antMatchers("/authenticate", "/register").permitAll()
-        .and().authorizeRequests().antMatchers("/**").permitAll() // TODO: Enables all access
-        .and().authorizeRequests().antMatchers("/h2-console/**").permitAll() // TODO: ADDED H2
-        // all other requests need to be authenticated
-        .anyRequest().authenticated().and()
-        // make sure we use stateless session; session won't be used to store user's state.
-        .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        httpSecurity
+                .csrf().disable()
+                // Adjusts CORS management
+                .cors().and()
+                // dont authenticate this particular request
+                .authorizeRequests().antMatchers(OPEN_URLS).permitAll()
+                // all other requests need to be authenticated
+                .anyRequest().authenticated().and()
+                // make sure we use stateless session; session won't be used to
+                // store user's state.
+                .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
         // Add a filter to validate the tokens with every request
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
-        httpSecurity.headers().frameOptions().disable(); // TODO: ADDED H2
+        httpSecurity.headers().frameOptions().disable();
     }
 }

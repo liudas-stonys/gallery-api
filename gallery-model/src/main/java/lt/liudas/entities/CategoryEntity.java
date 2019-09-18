@@ -8,8 +8,8 @@ import javax.validation.constraints.Size;
 import java.util.Set;
 
 @Entity
-@Table(name = "tags")
-public class TagEntity {
+@Table(name = "categories")
+public class CategoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true)
@@ -20,13 +20,13 @@ public class TagEntity {
     @Column(unique = true)
     private String name;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "tags")
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "categories")
     private Set<ImageEntity> images; // = new HashSet<>();
 
-    public TagEntity() {
+    public CategoryEntity() {
     }
 
-    public TagEntity(String name) {
+    public CategoryEntity(String name) {
         this.name = name.toLowerCase();
     }
 

@@ -1,143 +1,132 @@
 package lt.liudas.services;
 
-import lt.liudas.entities.ImageEntity;
-import lt.liudas.entities.ImageThumbnailEntity;
-import lt.liudas.entities.TagEntity;
+import lt.liudas.dao.*;
+import lt.liudas.entities.*;
 import lt.liudas.exceptions.ResourceNotFoundException;
 import lt.liudas.helpers.MainHelper;
-import lt.liudas.repositoriesDAO.ImageRepository;
-import lt.liudas.repositoriesDAO.ImageThumbnailRepository;
-import lt.liudas.repositoriesDAO.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
 public class DbServiceImpl implements DbService {
-
-//    @PersistenceContext
+    @PersistenceContext
     private EntityManager em;
-
-    private ImageRepository imageRepositoryImpl;
-    private ImageThumbnailRepository imageThumbnailRepositoryImpl;
-    private TagRepository tagRepositoryImpl;
-
     @Autowired
-    public DbServiceImpl(EntityManager em, ImageRepository imageRepositoryImpl, ImageThumbnailRepository imageThumbnailRepositoryImpl, TagRepository tagRepositoryImpl) {
-        this.em = em;
-        this.imageRepositoryImpl = imageRepositoryImpl;
-        this.imageThumbnailRepositoryImpl = imageThumbnailRepositoryImpl;
-        this.tagRepositoryImpl = tagRepositoryImpl;
+    private UserDao userDaoImpl;
+    @Autowired
+    private ImageDao imageDaoImpl;
+    @Autowired
+    private ImageFullSizeDao imageFullSizeDaoImpl;
+    @Autowired
+    private CategoryDao categoryDaoImpl;
+    @Autowired
+    private TagDao tagDaoImpl;
+
+    public List<ImageEntity> searchImages(List<String> data) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ImageEntity> query = cb.createQuery(ImageEntity.class);
+        // ... FROM ...
+        Root<ImageEntity> imagesTable = query.from(ImageEntity.class);
+        // Outer join
+        Join<ImageEntity, CategoryEntity> categories = imagesTable.join("categories", JoinType.LEFT);
+        Join<ImageEntity, TagEntity> tags = imagesTable.join("tags", JoinType.LEFT);
+        // Eliminates duplicates
+        query.select(imagesTable).distinct(true); // query.distinct(true);
+        List<Predicate> finalPredicateList = new ArrayList<>();
+        data.forEach(item -> {
+            finalPredicateList.add(cb.like(imagesTable.get("title"), "%" + item + "%"));
+            finalPredicateList.add(cb.like(imagesTable.get("description"), "%" + item + "%"));
+            finalPredicateList.add(cb.like(categories.get("name"), "%" + item + "%"));
+            finalPredicateList.add(cb.like(tags.get("name"), "%" + item + "%"));
+        });
+        // ... WHERE ...
+        Predicate finalPredicate = finalPredicateList.get(0);
+        for (Predicate predicate : finalPredicateList) {
+            finalPredicate = cb.or(finalPredicate, predicate);
+        }
+        query.where(finalPredicate);
+        return em.createQuery(query).getResultList();
     }
 
-//    public List<ImageEntity> findImageEntityByTagId(Long id) {
-//        return imageRepositoryImpl.findImageEntityByTagId(id);
-//    }
+    public List<UserEntity> getAllUsers() {
+        return userDaoImpl.findAll();
+    }
 
+    public List<CategoryEntity> getAllCategories() {
+        return categoryDaoImpl.findAll();
+    }
 
-
-//    @Override
-//    public void findAllImageEntitiesWithTags() {
-//        System.out.println("-- find images with tags --");
-//        EntityManager em = emf.createEntityManager();
-//        CriteriaBuilder cb = em.getCriteriaBuilder();
-//        CriteriaQuery<ImageEntity> query = cb.createQuery(ImageEntity.class);
-//        Root<ImageEntity> imageEntity = query.from(ImageEntity.class);
-//
-//        imageEntity.join(ImageEntity.getTags());
-//
-//        query.select(employee).distinct(true);
-//        TypedQuery<ImageEntity> typedQuery = em.createQuery(query);
-//        typedQuery.getResultList().forEach(System.out::println);
-//    }
-
-    // Get All Tags By Image Title
-//    @Override
-//    public List<TagEntity> findAllByImageEntity_Title(String title) {
-//        return tagRepositoryImpl.findAllByImageEntity_Title(title);
-//    }
-
-    // Get All Images By Tag
-//    @Override
-//    public List<ImageEntity> findImageEntityByTagId(List<TagEntity> tags) {
-//        return imageRepositoryImpl.findImageEntityByTagId(tags);
-//    }
-
-//    public List<ImageEntity> getAllImagesByTag(String tag) {
-//        EntityManager em = new JPAUtil().getEntityManager();
-//        Session session = em.unwrap(Session.class);
-//        Criteria c = session.createCriteria(Name.class);
-//
-//        return null;
-//    }
-
-
-
-
-
-    // Get All Images by Tag Name
     public List<ImageEntity> findImageEntityByTagName(String name) {
-        return imageRepositoryImpl.findImageEntityByTagName(name);
+        return imageDaoImpl.findImageEntityByTagName(name);
     }
 
-    // Get All Tags
-    public List<TagEntity> getAllTags() { return tagRepositoryImpl.findAll(); }
-
-    // Get All Images Thumbnails
-    public List<ImageThumbnailEntity> getAllImagesThumbnails() {
-        return imageThumbnailRepositoryImpl.findAll();
+    public List<TagEntity> getAllTags() {
+        return tagDaoImpl.findAll();
     }
 
-    // Get All Images
+    public List<ImageFullSize> getAllImagesFullSize() {
+        return imageFullSizeDaoImpl.findAll();
+    }
+
     public List<ImageEntity> getAllImages() {
-        return imageRepositoryImpl.findAll();
+        return imageDaoImpl.findAll();
     }
 
     // Create a new ImageEntity
-//    public ImageEntity saveImage(ImageEntity image) {
-    public ImageEntity saveImage(MultipartFile file) throws IOException {
-
-//        ImageEntity image = new ImageEntity();
-//        image.setData(file.getBytes());
-//        image.setTitle("Best image ever forever fuck");
-
-        byte[] imgThumb = MainHelper.createThumbnailFromMultipartFile(file, 300).toByteArray();
-
-        imageThumbnailRepositoryImpl.save(new ImageThumbnailEntity(file.getName(), imgThumb, file.getContentType(), (long) imgThumb.length));
-
-        return imageRepositoryImpl.save(new ImageEntity(file.getName(), file.getBytes(), file.getContentType(), file.getSize()));
+    public ImageEntity saveImage(String title, MultipartFile file, List<String> categories, List<String> tags) throws IOException {
+        List<CategoryEntity> categoryEntities = new ArrayList<>();
+        for (String category : categories) {
+            CategoryEntity categoryEntityFromDb = categoryDaoImpl.findByName(category);
+            if (categoryEntityFromDb == null) {
+                categoryEntities.add(new CategoryEntity(category));
+            } else {
+                categoryEntities.add(categoryEntityFromDb);
+            }
+        }
+        List<TagEntity> tagEntities = new ArrayList<>();
+        for (String tag : tags) {
+            TagEntity tagEntityFromDb = tagDaoImpl.findOneByName(tag);
+            if (tagEntityFromDb == null) {
+                tagEntities.add(new TagEntity(tag));
+            } else {
+                tagEntities.add(tagEntityFromDb);
+            }
+        }
+        ImageFullSize imageFullSize = imageFullSizeDaoImpl.save(new ImageFullSize(title, file.getContentType(), file.getBytes(), file.getSize()));
+        byte[] imgThumb = MainHelper.createThumbnailFromMultipartFile(file, 300);
+        return imageDaoImpl.save(new ImageEntity(imageFullSize.getId(), title, file.getContentType(), imgThumb, (long) imgThumb.length, "Ajajai kokia graži nuotraukytė", new HashSet<>(categoryEntities), new HashSet<>(tagEntities)));
     }
 
-    // Get a Single ImageEntity
     public ImageEntity getImageById(Long imageId) {
-        return imageRepositoryImpl.findById(imageId).orElseThrow(() -> new ResourceNotFoundException("ImageEntity", "id", imageId));
+        return imageDaoImpl.findById(imageId).orElseThrow(() -> new ResourceNotFoundException("ImageEntity", "id", imageId));
     }
 
-    // Update a ImageEntity
+    public ImageFullSize getImageFullSizeById(Long imageId) {
+        return imageFullSizeDaoImpl.findById(imageId).orElseThrow(() -> new ResourceNotFoundException("ImageEntity", "id", imageId));
+    }
+
     public ImageEntity updateImage(Long imageId, ImageEntity imageDetails) {
-
-        ImageEntity image = imageRepositoryImpl.findById(imageId).orElseThrow(() -> new ResourceNotFoundException(
+        ImageEntity image = imageDaoImpl.findById(imageId).orElseThrow(() -> new ResourceNotFoundException(
                 "ImageEntity", "id", imageId));
-
         image.setTitle(imageDetails.getTitle());
         image.setData(imageDetails.getData());
-
-        ImageEntity updatedImage = imageRepositoryImpl.save(image);
-        return updatedImage;
+        return image;
     }
 
-    // Delete a ImageEntity
     public ResponseEntity<?> deleteImage(Long imageId) {
-        ImageEntity image = imageRepositoryImpl.findById(imageId).orElseThrow(() -> new ResourceNotFoundException(
-                "ImageEntity", "id", imageId));
-
-        imageRepositoryImpl.delete(image);
-
+        ImageEntity image = imageDaoImpl.findById(imageId).orElseThrow(() -> new ResourceNotFoundException("ImageEntity", "id", imageId));
+        imageDaoImpl.delete(image);
         return ResponseEntity.ok().build();
     }
 }
