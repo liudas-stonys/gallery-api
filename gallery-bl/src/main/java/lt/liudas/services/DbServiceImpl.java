@@ -5,13 +5,11 @@ import lt.liudas.entities.*;
 import lt.liudas.exceptions.ResourceNotFoundException;
 import lt.liudas.helpers.MainHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -88,19 +86,19 @@ public class DbServiceImpl implements DbService {
         List<CategoryEntity> categoryEntities = new ArrayList<>();
         for (String category : categories) {
             CategoryEntity categoryEntityFromDb = categoryDaoImpl.findByName(category);
-            if (categoryEntityFromDb == null) {
-                categoryEntities.add(new CategoryEntity(category));
-            } else {
+            if (categoryEntityFromDb != null) {
                 categoryEntities.add(categoryEntityFromDb);
+            } else {
+                categoryEntities.add(new CategoryEntity(category));
             }
         }
         List<TagEntity> tagEntities = new ArrayList<>();
         for (String tag : tags) {
             TagEntity tagEntityFromDb = tagDaoImpl.findOneByName(tag);
-            if (tagEntityFromDb == null) {
-                tagEntities.add(new TagEntity(tag));
-            } else {
+            if (tagEntityFromDb != null) {
                 tagEntities.add(tagEntityFromDb);
+            } else {
+                tagEntities.add(new TagEntity(tag));
             }
         }
         ImageFullSize imageFullSize = imageFullSizeDaoImpl.save(new ImageFullSize(title, file.getContentType(), file.getBytes(), file.getSize()));
@@ -124,9 +122,9 @@ public class DbServiceImpl implements DbService {
         return image;
     }
 
-    public ResponseEntity<?> deleteImage(Long imageId) {
+    public List<ImageEntity> deleteImage(Long imageId) {
         ImageEntity image = imageDaoImpl.findById(imageId).orElseThrow(() -> new ResourceNotFoundException("ImageEntity", "id", imageId));
         imageDaoImpl.delete(image);
-        return ResponseEntity.ok().build();
+        return imageDaoImpl.findAll();
     }
 }

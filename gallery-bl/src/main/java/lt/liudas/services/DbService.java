@@ -1,7 +1,9 @@
 package lt.liudas.services;
 
-import lt.liudas.entities.*;
-import org.springframework.http.ResponseEntity;
+import lt.liudas.entities.CategoryEntity;
+import lt.liudas.entities.ImageEntity;
+import lt.liudas.entities.ImageFullSize;
+import lt.liudas.entities.TagEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -28,5 +30,5 @@ public interface DbService {
 
     ImageEntity updateImage(Long imageId, ImageEntity imageDetails);
 
-    ResponseEntity<?> deleteImage(Long imageId);
+    List<ImageEntity> deleteImage(Long imageId);
 }

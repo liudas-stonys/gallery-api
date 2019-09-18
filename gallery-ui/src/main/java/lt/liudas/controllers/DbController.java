@@ -7,7 +7,6 @@ import lt.liudas.entities.TagEntity;
 import lt.liudas.helpers.MainHelper;
 import lt.liudas.services.DbServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,7 +72,8 @@ public class DbController {
         return dbServiceImpl.updateImage(imageId, imageDetails);
     }
 
-    public ResponseEntity<?> deleteImage(@PathVariable(value = "id") Long imageId) {
+    @DeleteMapping("/images/{id}")
+    public List<ImageEntity> deleteImage(@PathVariable(value = "id") Long imageId) {
         return dbServiceImpl.deleteImage(imageId);
     }
 }
