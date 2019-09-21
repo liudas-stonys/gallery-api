@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class DbServiceImpl implements DbService {
@@ -82,28 +83,29 @@ public class DbServiceImpl implements DbService {
     }
 
     // Create a new ImageEntity
-    public ImageEntity saveImage(String title, MultipartFile file, List<String> categories, List<String> tags) throws IOException {
-        List<CategoryEntity> categoryEntities = new ArrayList<>();
-        for (String category : categories) {
-            CategoryEntity categoryEntityFromDb = categoryDaoImpl.findByName(category);
+    public ImageEntity saveImage(String title, String description, List<String> categories, List<String> tags, MultipartFile file) throws IOException {
+        Set<CategoryEntity> categoryEntities = new HashSet<>();
+        Set<TagEntity> tagEntities = new HashSet<>();
+        categories.forEach(cat -> {
+            CategoryEntity categoryEntityFromDb = categoryDaoImpl.findByName(cat);
             if (categoryEntityFromDb != null) {
                 categoryEntities.add(categoryEntityFromDb);
             } else {
-                categoryEntities.add(new CategoryEntity(category));
+                categoryEntities.add(new CategoryEntity(cat));
             }
-        }
-        List<TagEntity> tagEntities = new ArrayList<>();
-        for (String tag : tags) {
-            TagEntity tagEntityFromDb = tagDaoImpl.findOneByName(tag);
+        });
+        tags.forEach(tag -> {
+            TagEntity tagEntityFromDb = tagDaoImpl.findByName(tag);
             if (tagEntityFromDb != null) {
                 tagEntities.add(tagEntityFromDb);
             } else {
                 tagEntities.add(new TagEntity(tag));
             }
-        }
+        });
+
         ImageFullSize imageFullSize = imageFullSizeDaoImpl.save(new ImageFullSize(title, file.getContentType(), file.getBytes(), file.getSize()));
         byte[] imgThumb = MainHelper.createThumbnailFromMultipartFile(file, 300);
-        return imageDaoImpl.save(new ImageEntity(imageFullSize.getId(), title, file.getContentType(), imgThumb, (long) imgThumb.length, "Ajajai kokia graži nuotraukytė", new HashSet<>(categoryEntities), new HashSet<>(tagEntities)));
+        return imageDaoImpl.save(new ImageEntity(imageFullSize.getId(), title, file.getContentType(), imgThumb, (long) imgThumb.length, description, categoryEntities, tagEntities));
     }
 
     public ImageEntity getImageById(Long imageId) {

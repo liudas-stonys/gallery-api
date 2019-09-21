@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -15,6 +16,12 @@ import java.util.Set;
 @Table(name = "images")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
+//@JsonIdentityInfo(
+//        generator = ObjectIdGenerators.PropertyGenerator.class,
+//        property = "id")
+
+//@EqualsAndHashCode(exclude = {"categories", "tags"})
+//@ToString(exclude = {"categories", "tags"})
 public class ImageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,13 +51,17 @@ public class ImageEntity {
     @LastModifiedDate
     private Date updatedAt;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+//    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "images_categories", joinColumns = {@JoinColumn(name = "image_id")}, inverseJoinColumns = {@JoinColumn(name = "category_id")})
-    private Set<CategoryEntity> categories; // = new HashSet<>();
+//    @JsonBackReference
+    private Set<CategoryEntity> categories = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+//    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "images_tags", joinColumns = {@JoinColumn(name = "image_id")}, inverseJoinColumns = {@JoinColumn(name = "tag_id")})
-    private Set<TagEntity> tags; // = new HashSet<>();
+//    @JsonBackReference
+    private Set<TagEntity> tags = new HashSet<>();
 
     public ImageEntity() {
     }
@@ -64,5 +75,25 @@ public class ImageEntity {
         this.description = description.toLowerCase();
         this.categories = categories;
         this.tags = tags;
+    }
+
+    public void addCategory(CategoryEntity cat) {
+        this.categories.add(cat);
+        cat.getImages().add(this);
+    }
+
+    public void removeCategory(CategoryEntity cat) {
+        this.categories.remove(cat);
+        cat.getImages().remove(this);
+    }
+
+    public void addTag(TagEntity tag) {
+        this.tags.add(tag);
+        tag.getImages().add(this);
+    }
+
+    public void removeTag(TagEntity tag) {
+        this.tags.remove(tag);
+        tag.getImages().remove(this);
     }
 }

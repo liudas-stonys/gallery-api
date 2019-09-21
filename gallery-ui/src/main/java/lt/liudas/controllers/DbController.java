@@ -53,9 +53,18 @@ public class DbController {
     }
 
     @PostMapping("/images")
-    public ImageEntity saveImage(@RequestParam("title") String title, @RequestParam("file") MultipartFile file, @RequestParam("categories") List<String> categories, @RequestParam("tags") List<String> tags) throws IOException {
-        return dbServiceImpl.saveImage(title, file, categories, tags);
+    public ImageEntity saveImage(@RequestParam("title") String title, @RequestParam("description") String description, @RequestParam("categories") List<String> categories, @RequestParam("tags") List<String> tags, @RequestParam("file") MultipartFile file) throws IOException {
+        categories.forEach(System.out::println);
+        return dbServiceImpl.saveImage(title, description, categories, tags, file);
     }
+
+//    @PostMapping("/images")
+//    public ImageEntity saveImage(@RequestParam("file") MultipartFile file) {
+////        System.out.println(image.getTitle());
+//        System.out.println(file.getContentType());
+////        return dbServiceImpl.saveImage(image.getTitle(), image.getDescription(), image.getCategories(), image.getTags(), file);
+//        return null;
+//    }
 
     @GetMapping("/images/{id}")
     public ImageEntity getImageById(@PathVariable(value = "id") Long imageId) {

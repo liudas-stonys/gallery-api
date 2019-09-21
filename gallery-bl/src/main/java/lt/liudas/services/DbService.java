@@ -22,7 +22,7 @@ public interface DbService {
 
     List<ImageEntity> getAllImages();
 
-    ImageEntity saveImage(String title, MultipartFile file, List<String> categories, List<String> tags) throws IOException;
+    ImageEntity saveImage(String title, String description, List<String> categories, List<String> tags, MultipartFile file) throws IOException;
 
     ImageEntity getImageById(Long imageId);
 

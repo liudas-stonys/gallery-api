@@ -62,7 +62,7 @@ public class DbSeederServiceImpl implements DbSeederService, CommandLineRunner {
 
         // TODO: Users
         userDaoImpl.save(userServiceImpl.createUserEntity("aeom", "aeom@aeom.ai", "meow", "admin"));
-        userDaoImpl.save(userServiceImpl.createUserEntity("monika", "monika@aeom.ai", "armonika", "user"));
+        userDaoImpl.save(userServiceImpl.createUserEntity("monika", "monika@aeom.ai", "meow", "user"));
     }
 
     public ImageFullSize createImageFullSizeEntity(String title, String filePath) throws IOException {
